@@ -23,7 +23,9 @@
     "core-js": "^2.4.1",
     "rxjs": "^6.2.1",
     "zone.js": "^0.8.4",
-    "rxjs-compat": "^6.0.0-rc.0"
+    "rxjs-compat": "^6.0.0-rc.0",
+    "@types/three": "0.92.3",
+    "three": "^0.88.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.6.6",
