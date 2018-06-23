@@ -1,5 +1,5 @@
 import { Component, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
-import { CubeGeometry, Scene, PointLight, PerspectiveCamera, Vector3, BoxBufferGeometry, MeshBasicMaterial, Mesh, WebGLRenderer, PCFSoftShadowMap, Color, DoubleSide, Vector2, Geometry, Face3, Raycaster, ShaderMaterial, LineSegments, Box3, Ray, BoxGeometry, Matrix4, Matrix3, Line3, Line } from 'three';
+import { CubeGeometry, Scene, PointLight, PerspectiveCamera, Vector3, BoxBufferGeometry, MeshBasicMaterial, Mesh, WebGLRenderer, PCFSoftShadowMap, Color, DoubleSide, Vector2, Geometry, Face3, Raycaster, ShaderMaterial, LineSegments, Box3, Ray, BoxGeometry, Matrix4, Matrix3, Line3, Line, AmbientLight, DirectionalLight } from 'three';
 import "./js/EnableThreeExamples";
 import "three/examples/js/controls/OrbitControls";
 import { Cube } from './cube';
@@ -45,7 +45,7 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.scene = new Scene();
 
-    this.loadCubes();
+    this.loadCube();
 
     //this.loadLines();
     
@@ -61,18 +61,22 @@ export class AppComponent implements OnInit {
   private createCamera() {
     this.camera = new Camera();
     this.camera.camera = new PerspectiveCamera(55.0, window.innerWidth / window.innerHeight, 0.5, 300000);
-    this.camera.camera.position.set(0, 0, -100);
+    this.camera.camera.position.set(50, 100, -100);
     this.camera.camera.lookAt(new Vector3());
   }
 
   private createLights() {
-    var light = new PointLight(0xffffff, 1, 1000);
-    light.position.set(0, 1000, 1000);
-    this.scene.add(light);
+    // Add 2 lights.
+    var light1 = new THREE.PointLight(0xff0040, 2, 0);
+    light1.position.set(200, 100, 300);
+    this.scene.add(light1);
+    var light2 = new THREE.PointLight(0x0040ff, 2, 0);
+    light2.position.set(-200, 100, 300);
+    this.scene.add(light2);
+  }
 
-    var light = new PointLight(0xffffff, 1, 1000);
-    light.position.set(0, 1000, -1000);
-    this.scene.add(light);
+  private loadCube() {
+    this.createCube(10, 0, 0, 0, 0);
   }
 
   private loadCubes() {
@@ -147,18 +151,12 @@ export class AppComponent implements OnInit {
           cube.mesh.rotateX(cube.dfRotateX/30);
           cube.mesh.rotateY(cube.dfRotateY/30);
           cube.mesh.rotateZ(cube.dfRotateZ/30);
-          cube.line.rotateX(cube.dfRotateX/30);
-          cube.line.rotateY(cube.dfRotateY/30);
-          cube.line.rotateZ(cube.dfRotateZ/30);
         }
         if(cube.stopTranslate == false) {
           //console.log("aa:" + cube.stopTranslate);
           cube.mesh.translateX(cube.dfTranslateX/10);
           cube.mesh.translateY(cube.dfTranslateY/10);
           cube.mesh.translateZ(cube.dfTranslateZ/10);
-          cube.line.translateX(cube.dfTranslateX/10);
-          cube.line.translateY(cube.dfTranslateY/10);
-          cube.line .translateZ(cube.dfTranslateZ/10);
         }
         //console.log(this.cubes[x].totalRotateX);
       }
@@ -167,9 +165,14 @@ export class AppComponent implements OnInit {
 
   private createCube(size, translateX, translateY, translateZ, color) {
     let geometry = new BoxGeometry(size, size, size, 1, 1, 1);
-    let material = new MeshBasicMaterial({
-      color: this.colors[color],
-      side: DoubleSide,
+    
+    // Make a material
+    var material = new THREE.MeshPhongMaterial({
+      ambient: 0x555555,
+      color: 0x555555,
+      specular: 0xffffff,
+      shininess: 50,
+      shading: THREE.SmoothShading,
       transparent: true,
       opacity: 0.5
     });
@@ -179,20 +182,13 @@ export class AppComponent implements OnInit {
     mesh.translateY(translateY);
     mesh.translateZ(translateZ);
     this.scene.add(mesh);
-    var line = new LineSegments( geometry, new THREE.LineBasicMaterial( { color: 0xffffff } ) );
-    line.rotation.x = Math.PI / 2;
-    line.translateX(translateX);
-    line.translateY(translateY);
-    line.translateZ(translateZ);
+
     let cube = new Cube();
     cube.mesh = mesh;
-    cube.line = line;
     cube.stopRotate = false;
     cube.stopTranslate = false;
     cube.changed = false;
-    //cube.size = size;
     this.cubes.push(cube);
-    this.scene.add(line);
   }
 
   private colorsPalette() {
@@ -205,7 +201,7 @@ export class AppComponent implements OnInit {
   public render() {
     //console.log("render");
 
-    this.moveCubes();
+    //this.moveCubes();
 
     //this.moveCamera();
 
