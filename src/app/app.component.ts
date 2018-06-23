@@ -1,5 +1,5 @@
 import { Component, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
-import { CubeGeometry, Scene, PointLight, PerspectiveCamera, Vector3, BoxBufferGeometry, MeshBasicMaterial, Mesh, WebGLRenderer, PCFSoftShadowMap, Color, DoubleSide, Vector2, Geometry, Face3, Raycaster, ShaderMaterial, LineSegments, Box3, Ray, BoxGeometry, Matrix4, Matrix3, Line3, Line, AmbientLight, DirectionalLight } from 'three';
+import { CubeGeometry, Scene, PointLight, PerspectiveCamera, Vector3, BoxBufferGeometry, MeshBasicMaterial, Mesh, WebGLRenderer, PCFSoftShadowMap, Color, DoubleSide, Vector2, Geometry, Face3, Raycaster, ShaderMaterial, LineSegments, Box3, Ray, BoxGeometry, Matrix4, Matrix3, Line3, Line, AmbientLight, DirectionalLight, PlaneGeometry } from 'three';
 import "./js/EnableThreeExamples";
 import "three/examples/js/controls/OrbitControls";
 import { Cube } from './cube';
@@ -45,7 +45,9 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.scene = new Scene();
 
-    this.loadCube();
+    this.loadPlane();
+
+    this.loadCubes();
 
     //this.loadLines();
     
@@ -60,33 +62,49 @@ export class AppComponent implements OnInit {
 
   private createCamera() {
     this.camera = new Camera();
-    this.camera.camera = new PerspectiveCamera(55.0, window.innerWidth / window.innerHeight, 0.5, 300000);
-    this.camera.camera.position.set(50, 100, -100);
-    this.camera.camera.lookAt(new Vector3());
+    this.camera.camera = new PerspectiveCamera(55.0, window.innerWidth / window.innerHeight, 0.5, 3000);
+    this.camera.camera.position.set(0, 25, -50);
+    this.camera.camera.lookAt(new Vector3(0, 25, 0));
   }
 
   private createLights() {
     // Add 2 lights.
-    var light1 = new THREE.PointLight(0xff0040, 2, 0);
-    light1.position.set(200, 100, 300);
+    var light1 = new PointLight(0x114440, 10, 0);
+    light1.position.set(200, 100, -300);
     this.scene.add(light1);
-    var light2 = new THREE.PointLight(0x0040ff, 2, 0);
-    light2.position.set(-200, 100, 300);
+    var light2 = new PointLight(0x444011, 10, 0);
+    light2.position.set(-200, 100, -300);
     this.scene.add(light2);
   }
 
+  private loadPlane() {
+    let geometry = new PlaneGeometry(1000, 1000, 1, 1);
+    
+    // Make a material
+    var material = new THREE.MeshPhongMaterial({
+      ambient: 0x555555,
+      color: 0x555555,
+      specular: 0xffffff,
+      shininess: 50,
+      shading: THREE.SmoothShading
+    });
+    let plane = new Mesh(geometry, material);
+    this.scene.add(plane);
+  }
+
   private loadCube() {
-    this.createCube(10, 0, 0, 0, 0);
+    this.createCube(10, 0, 0, 0);
   }
 
   private loadCubes() {
-    let color = 0;
+    for(let x = 0; x < 4; x++) {
+      this.createCube(10, 0, -25 + 12.5*x, 0);
+    }
+  }
+
+  private loadCubesRandom() {
     for(let x = 0; x < 40; x++) {
-      this.createCube(Math.random()*10, Math.random()*100-50, Math.random()*100-50, Math.random()*100-50, color);
-      color++;
-      if(color > 2) {
-        color = 0;
-      }
+      this.createCube(Math.random()*10, Math.random()*100-50, Math.random()*100-50, Math.random()*100-50);
     }
   }
 
@@ -163,7 +181,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  private createCube(size, translateX, translateY, translateZ, color) {
+  private createCube(size, translateX, translateY, translateZ) {
     let geometry = new BoxGeometry(size, size, size, 1, 1, 1);
     
     // Make a material
@@ -177,7 +195,7 @@ export class AppComponent implements OnInit {
       opacity: 0.5
     });
     let mesh = new Mesh(geometry, material);
-    mesh.rotation.x = Math.PI / 2;
+    mesh.rotateY(Math.PI/4);
     mesh.translateX(translateX);
     mesh.translateY(translateY);
     mesh.translateZ(translateZ);
