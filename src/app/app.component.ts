@@ -1,5 +1,5 @@
 import { Component, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
-import { CubeGeometry, Scene, PointLight, PerspectiveCamera, Vector3, BoxBufferGeometry, MeshBasicMaterial, Mesh, WebGLRenderer, PCFSoftShadowMap, Color, DoubleSide, Vector2, Geometry, Face3, Raycaster, ShaderMaterial, LineSegments, Box3, Ray, BoxGeometry, Matrix4, Matrix3, Line3, Line, AmbientLight, DirectionalLight, PlaneGeometry } from 'three';
+import { CubeGeometry, Scene, PointLight, PerspectiveCamera, Vector3, BoxBufferGeometry, MeshBasicMaterial, Mesh, WebGLRenderer, PCFSoftShadowMap, Color, DoubleSide, Vector2, Geometry, Face3, Raycaster, ShaderMaterial, LineSegments, Box3, Ray, BoxGeometry, Matrix4, Matrix3, Line3, Line, AmbientLight, DirectionalLight, PlaneGeometry, LineBasicMaterial } from 'three';
 import "./js/EnableThreeExamples";
 import "three/examples/js/controls/OrbitControls";
 import { Cube } from './cube';
@@ -98,7 +98,10 @@ export class AppComponent implements OnInit {
 
   private loadCubes() {
     for(let x = 0; x < 4; x++) {
-      this.createCube(10, 0, -25 + 12.5*x, 0);
+      this.createCube(10, 0, -25 + 12.5*x, 0, true);
+      this.createCube(5, 0, -25 + 12.5*x, 0, false);
+      this.createLine(3.5, -25 + 12.5*x, 3.5);
+      this.createLine(3.5, -25 + 12.5*x, -3.5);
     }
   }
 
@@ -181,7 +184,30 @@ export class AppComponent implements OnInit {
     }
   }
 
-  private createCube(size, translateX, translateY, translateZ) {
+  private createLine(translateX, translateY, translateZ) {
+
+    // Make a material
+    var material = new THREE.MeshPhongMaterial({
+      ambient: 0x555555,
+      color: 0x555555,
+      specular: 0xffffff,
+      shininess: 50,
+      shading: THREE.SmoothShading      
+    });
+    
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(
+      new THREE.Vector3( -translateX, translateY, -translateZ ),
+      new THREE.Vector3( translateX, translateY, translateZ )
+    );
+    
+    var line = new THREE.Line( geometry, material );
+    this.scene.add( line );
+
+    this.scene.add(line);
+  }
+
+  private createCube(size, translateX, translateY, translateZ, transparent?) {
     let geometry = new BoxGeometry(size, size, size, 1, 1, 1);
     
     // Make a material
@@ -190,10 +216,14 @@ export class AppComponent implements OnInit {
       color: 0x555555,
       specular: 0xffffff,
       shininess: 50,
-      shading: THREE.SmoothShading,
-      transparent: true,
-      opacity: 0.5
+      shading: THREE.SmoothShading      
     });
+
+    if(transparent) {
+      material.transparent = true;
+      material.opacity = 0.5;
+    }
+
     let mesh = new Mesh(geometry, material);
     mesh.rotateY(Math.PI/4);
     mesh.translateX(translateX);
