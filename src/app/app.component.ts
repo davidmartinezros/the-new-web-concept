@@ -63,17 +63,17 @@ export class AppComponent implements OnInit {
   private createCamera() {
     this.camera = new Camera();
     this.camera.camera = new PerspectiveCamera(55.0, window.innerWidth / window.innerHeight, 0.5, 3000);
-    this.camera.camera.position.set(0, 25, -50);
+    this.camera.camera.position.set(75, 75, -75);
     this.camera.camera.lookAt(new Vector3(0, 25, 0));
   }
 
   private createLights() {
     // Add 2 lights.
-    var light1 = new PointLight(0x114440, 10, 0);
-    light1.position.set(200, 100, -300);
+    var light1 = new PointLight(0x114440, 5, 0);
+    light1.position.set(200, 200, -300);
     this.scene.add(light1);
-    var light2 = new PointLight(0x444011, 10, 0);
-    light2.position.set(-200, 100, -300);
+    var light2 = new PointLight(0x444011, 5, 0);
+    light2.position.set(-200, 200, -300);
     this.scene.add(light2);
   }
 
@@ -82,33 +82,61 @@ export class AppComponent implements OnInit {
     
     // Make a material
     var material = new THREE.MeshPhongMaterial({
-      ambient: 0x555555,
       color: 0x555555,
       specular: 0xffffff,
       shininess: 50,
-      shading: THREE.SmoothShading
+      flatShading: THREE.SmoothShading
     });
     let plane = new Mesh(geometry, material);
     this.scene.add(plane);
   }
 
   private loadCube() {
-    this.createCube(10, 0, 0, 0);
+    let cube = new Cube();
+    this.createCube(cube, 10, 0, 0, 0);
   }
 
   private loadCubes() {
-    for(let x = 0; x < 4; x++) {
-      this.createCube(10, 0, -25 + 12.5*x, 0, true, 0.25);
-      this.createCube(3, 0, -25 + 12.5*x, 0, false);
-      this.createLine(1, 10, 0, -25 + 12.5*x, 0, false, false, false);
-      this.createLine(1, 10, 0, -25 + 12.5*x, 0, true, true, false);
-      this.createLine(1, 10, 0, -25 + 12.5*x, 0, false, true, true);
+    /*
+    let geometry = new BoxGeometry(12, 50, 12, 1, 1, 1);
+    
+    var material = new THREE.MeshPhongMaterial({
+      color: 0x555555,
+      specular: 0xffffff,
+      shininess: 50,
+      flatShading: THREE.SmoothShading,
+      transparent: true,
+      opacity: 0.25
+    });
+
+    let mesh = new Mesh(geometry, material);
+    mesh.translateX(0);
+    mesh.translateY(-6);
+    mesh.translateZ(0);
+    this.scene.add(mesh);
+    */
+    for(let x = 0; x < 5; x++) {
+      for(let y = 0; y < 5; y++) {
+        for(let z = 0; z < 5; z++) {
+          let cube = new Cube();
+          cube.mesh = this.createCube(cube, 10, -25 + 12.5*x, -25 + 12.5*y, -25 + 12.5*z, true, 0.25);
+          cube.mesh2 = this.createCube(cube, 3, -25 + 12.5*x, -25 + 12.5*y, -25 + 12.5*z, false);
+          cube.cilindre1 = this.createCilindre(cube, 1, 1, 10, -25 + 12.5*x, -25 + 12.5*y, -25 + 12.5*z, false, false, false);
+          cube.cilindre2 = this.createCilindre(cube, 2, 1, 10, -25 + 12.5*x, -25 + 12.5*y, -25 + 12.5*z, true, false, false);
+          cube.cilindre3 = this.createCilindre(cube, 3, 1, 10, -25 + 12.5*x, -25 + 12.5*y, -25 + 12.5*z, false, false, true);
+          cube.stopRotate = false;
+          cube.stopTranslate = false;
+          cube.changed = false;
+          this.cubes.push(cube);
+        }
+      }
     }
   }
 
   private loadCubesRandom() {
     for(let x = 0; x < 40; x++) {
-      this.createCube(Math.random()*10, Math.random()*100-50, Math.random()*100-50, Math.random()*100-50);
+      let cube = new Cube();
+      this.createCube(cube, Math.random()*10, Math.random()*100-50, Math.random()*100-50, Math.random()*100-50);
     }
   }
 
@@ -185,17 +213,16 @@ export class AppComponent implements OnInit {
     }
   }
 
-  private createLine(radius, size, translateX, translateY, translateZ, rotateX, rotateY, rotateZ) {
+  private createCilindre(cube, number, radius, size, translateX, translateY, translateZ, rotateX, rotateY, rotateZ) {
 
     let geometry = new CylinderGeometry(radius, radius, size, size, 1);
 
     // Make a material
     var material = new THREE.MeshPhongMaterial({
-      ambient: 0x555555,
       color: 0x555555,
       specular: 0xffffff,
       shininess: 50,
-      shading: THREE.SmoothShading      
+      flatShading: THREE.SmoothShading      
     });
     /*
     var geometry = new THREE.Geometry();
@@ -208,28 +235,29 @@ export class AppComponent implements OnInit {
     mesh.translateX(translateX);
     mesh.translateY(translateY);
     mesh.translateZ(translateZ);
-    if(rotateY) {
-      mesh.rotateY(Math.PI/4);
-    }
     if(rotateX) {
       mesh.rotateX(Math.PI/2);
+    }
+    if(rotateY) {
+      mesh.rotateY(Math.PI/2);
     }
     if(rotateZ) {
       mesh.rotateZ(Math.PI/2);
     }
     this.scene.add(mesh);
+    
+    return mesh;
   }
 
-  private createCube(size, translateX, translateY, translateZ, transparent?, opacity?) {
+  private createCube(cube, size, translateX, translateY, translateZ, transparent?, opacity?) {
     let geometry = new BoxGeometry(size, size, size, 1, 1, 1);
     
     // Make a material
     var material = new THREE.MeshPhongMaterial({
-      ambient: 0x555555,
       color: 0x555555,
       specular: 0xffffff,
       shininess: 50,
-      shading: THREE.SmoothShading      
+      flatShading: THREE.SmoothShading      
     });
 
     if(transparent) {
@@ -239,18 +267,13 @@ export class AppComponent implements OnInit {
     }
 
     let mesh = new Mesh(geometry, material);
-    mesh.rotateY(Math.PI/4);
+    //mesh.rotateY(Math.PI/4);
     mesh.translateX(translateX);
     mesh.translateY(translateY);
     mesh.translateZ(translateZ);
     this.scene.add(mesh);
 
-    let cube = new Cube();
-    cube.mesh = mesh;
-    cube.stopRotate = false;
-    cube.stopTranslate = false;
-    cube.changed = false;
-    this.cubes.push(cube);
+    return mesh;
   }
 
   private colorsPalette() {
@@ -331,6 +354,8 @@ export class AppComponent implements OnInit {
             cubesTmp[0].stopTranslate = !cubesTmp[0].stopTranslate;
             cubesTmp[0].stopRotate = !cubesTmp[0].stopRotate;
             cubesTmp[0].changed = true;
+            cubesTmp[0].mesh.material[0].transparent = false;
+            cubesTmp[0].mesh.material[0].opacity = 1.0;
             console.log(cubesTmp[0].stopTranslate);
           }
         }
