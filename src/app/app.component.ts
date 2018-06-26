@@ -1,5 +1,5 @@
 import { Component, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
-import { CubeGeometry, Scene, PointLight, PerspectiveCamera, Vector3, BoxBufferGeometry, MeshBasicMaterial, Mesh, WebGLRenderer, PCFSoftShadowMap, Color, DoubleSide, Vector2, Geometry, Face3, Raycaster, ShaderMaterial, LineSegments, Box3, Ray, BoxGeometry, Matrix4, Matrix3, Line3, Line, AmbientLight, DirectionalLight, PlaneGeometry, LineBasicMaterial, CylinderGeometry } from 'three';
+import { CubeGeometry, Scene, PointLight, PerspectiveCamera, Vector3, BoxBufferGeometry, MeshBasicMaterial, Mesh, WebGLRenderer, PCFSoftShadowMap, Color, DoubleSide, Vector2, Geometry, Face3, Raycaster, ShaderMaterial, LineSegments, Box3, Ray, BoxGeometry, Matrix4, Matrix3, Line3, Line, AmbientLight, DirectionalLight, PlaneGeometry, LineBasicMaterial, CylinderGeometry, Material } from 'three';
 import "./js/EnableThreeExamples";
 import "three/examples/js/controls/OrbitControls";
 import { Cube } from './cube';
@@ -119,14 +119,20 @@ export class AppComponent implements OnInit {
       for(let y = 0; y < 5; y++) {
         for(let z = 0; z < 5; z++) {
           let cube = new Cube();
-          cube.mesh = this.createCube(cube, 10, -25 + 12.5*x, -25 + 12.5*y, -25 + 12.5*z, true, 0.25);
-          cube.mesh2 = this.createCube(cube, 3, -25 + 12.5*x, -25 + 12.5*y, -25 + 12.5*z, false);
-          cube.cilindre1 = this.createCilindre(cube, 1, 1, 10, -25 + 12.5*x, -25 + 12.5*y, -25 + 12.5*z, false, false, false);
-          cube.cilindre2 = this.createCilindre(cube, 2, 1, 10, -25 + 12.5*x, -25 + 12.5*y, -25 + 12.5*z, true, false, false);
-          cube.cilindre3 = this.createCilindre(cube, 3, 1, 10, -25 + 12.5*x, -25 + 12.5*y, -25 + 12.5*z, false, false, true);
+          let translateX = -25 + 12.5*x;
+          let translateY = -25 + 12.5*y;
+          let translateZ = -25 + 12.5*z;
+          cube.mesh = this.createCube(cube, 10, translateX, translateY, translateZ, true, 0.25);
+          cube.mesh2 = this.createCube(cube, 3, translateX, translateY, translateZ, false);
+          cube.cilindre1 = this.createCilindre(cube, 1, 1, 10, translateX, translateY, translateZ, false, false, false);
+          cube.cilindre2 = this.createCilindre(cube, 2, 1, 10, translateX, translateY, translateZ, true, false, false);
+          cube.cilindre3 = this.createCilindre(cube, 3, 1, 10, translateX, translateY, translateZ, false, false, true);
           cube.stopRotate = false;
           cube.stopTranslate = false;
           cube.changed = false;
+          cube.dfTranslateX = translateX;
+          cube.dfTranslateY = translateY;
+          cube.dfTranslateZ = translateZ;
           this.cubes.push(cube);
         }
       }
@@ -338,28 +344,49 @@ export class AppComponent implements OnInit {
     mouse.y = - (event.clientY / this.renderer.domElement.clientHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, this.camera.camera);
 
+    for(let cube of this.cubes) {
+      (<Material>cube.mesh.material).transparent = true;
+      (<Material>cube.mesh.material).opacity = 0.25;
+    }
+
     var obj: THREE.Object3D[] = [];
     this.findAllObjects(obj, this.scene);
     var intersects = raycaster.intersectObjects(obj);
     console.log("Scene has " + obj.length + " objects");
     console.log(intersects.length + " intersected objects found")
-    intersects.forEach((i) => {
+    if(intersects.length > 0) {
         //console.log(i.object); // do what you want to do with object
         //i.object.position.y = i.object.position.y + 1;
         let cubesTmp: Cube[];
-        cubesTmp = this.cubes.filter(cube => cube.mesh === i.object)
+        cubesTmp = this.cubes.filter(cube => cube.mesh === intersects[0].object)
         if(cubesTmp.length > 0) {
           //console.log(cubesTmp[0].stopTranslate);
           if(!cubesTmp[0].changed) {
             cubesTmp[0].stopTranslate = !cubesTmp[0].stopTranslate;
             cubesTmp[0].stopRotate = !cubesTmp[0].stopRotate;
             cubesTmp[0].changed = true;
-            cubesTmp[0].mesh.material[0].transparent = false;
-            cubesTmp[0].mesh.material[0].opacity = 1.0;
-            console.log(cubesTmp[0].stopTranslate);
+            (<Material>cubesTmp[0].mesh.material).transparent = false;
+            (<Material>cubesTmp[0].mesh.material).opacity = 1.0;
+            for(let cube of this.cubes) {
+              if(cube.mesh != cubesTmp[0].mesh) {
+                if(cube.dfTranslateX == cubesTmp[0].dfTranslateX
+                  && cube.dfTranslateY == cubesTmp[0].dfTranslateY) {
+                  (<Material>cube.mesh.material).opacity = 0.6;
+                }
+                if(cube.dfTranslateX == cubesTmp[0].dfTranslateX
+                  && cube.dfTranslateZ == cubesTmp[0].dfTranslateZ) {
+                  (<Material>cube.mesh.material).opacity = 0.6;
+                }
+                if(cube.dfTranslateY == cubesTmp[0].dfTranslateY
+                  && cube.dfTranslateZ == cubesTmp[0].dfTranslateZ) {
+                  (<Material>cube.mesh.material).opacity = 0.6;
+                }
+              }
+            }
+            //console.log(cubesTmp[0].stopTranslate);
           }
         }
-    });
+    }
     this.setAllChangedsToFalse();
     this.renderControls();
   }
