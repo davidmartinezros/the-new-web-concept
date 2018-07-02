@@ -1,7 +1,7 @@
 import { Component, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { CubeGeometry, Scene, PointLight, PerspectiveCamera, Vector3, BoxBufferGeometry, MeshBasicMaterial, Mesh, WebGLRenderer, PCFSoftShadowMap, Color, DoubleSide, Vector2, Geometry, Face3, Raycaster, ShaderMaterial, LineSegments, Box3, Ray, BoxGeometry, Matrix4, Matrix3, Line3, Line, AmbientLight, DirectionalLight, PlaneGeometry, LineBasicMaterial, CylinderGeometry, Material } from 'three';
-import "./js/EnableThreeExamples";
-import "three/examples/js/controls/OrbitControls";
+//import "./js/EnableThreeExamples";
+//import "three/examples/js/controls/OrbitControls";
 import { Cube } from './cube';
 import { Camera } from './camera';
 
@@ -16,9 +16,13 @@ export class AppComponent implements OnInit {
 
   scene: Scene;
 
+	cssScene: Scene;
+
   camera: Camera;
 
   renderer: WebGLRenderer;
+
+  rendererCSS: THREE.CSS3DRenderer;
 
   controls: THREE.OrbitControls;
 
@@ -45,7 +49,11 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.scene = new Scene();
 
-    this.loadPlane();
+    this.cssScene = new Scene();
+
+    //this.loadPlane();
+
+    this.loadHtml();
 
     this.loadCubes();
 
@@ -75,6 +83,41 @@ export class AppComponent implements OnInit {
     var light2 = new PointLight(0x444011, 5, 0);
     light2.position.set(-200, 200, -300);
     this.scene.add(light2);
+  }
+
+  private loadHtml() {
+    // create the plane mesh
+    var material = new THREE.MeshBasicMaterial({ wireframe: true });
+    var planeWidth = 360;
+    var planeHeight = 120;
+	  var geometry = new THREE.PlaneGeometry( planeWidth, planeHeight );
+    var planeMesh= new THREE.Mesh( geometry, material );
+    // add it to the WebGL scene
+    this.scene.add(planeMesh);
+
+    // create the dom Element
+    var element = document.createElement( 'iframe' );
+    element.src = 'http://stemkoski.github.io/Three.js/index.html';
+    // width of iframe in pixels
+    var elementWidth = 1024;
+    // force iframe to have same relative dimensions as planeGeometry
+    var aspectRatio = window.innerWidth / window.innerHeight;
+    var elementHeight = elementWidth * aspectRatio;
+    element.style.width  = elementWidth + "px";
+    element.style.height = elementHeight + "px";
+
+    // create the object3d for this element
+    var cssObject: THREE.CSS3DObject = new THREE.CSS3DObject( element );
+    
+    var percentBorder = 0.05;
+    cssObject.scale.x /= (1 + percentBorder) * (elementWidth / planeWidth);
+    cssObject.scale.y /= (1 + percentBorder) * (elementWidth / planeWidth);
+    // we reference the same position and rotation 
+    console.log(cssObject);
+    //cssObject.position = planeMesh.position;
+    //cssObject.rotation = planeMesh.rotation;
+    // add it to the css scene
+    this.cssScene.add(cssObject);
   }
 
   private loadPlane() {
@@ -298,6 +341,8 @@ export class AppComponent implements OnInit {
 
     this.renderer.render(this.scene, this.camera.camera);
 
+    this.rendererCSS.render(this.cssScene, this.camera.camera);
+
     requestAnimationFrame(this.render);
 
   }
@@ -313,7 +358,16 @@ export class AppComponent implements OnInit {
       this.controls.addEventListener('change', this.renderControls);
   }
 
-  private startRendering() {    
+  private startRendering() {
+    /*
+    this.renderer = new THREE.CSS3DRenderer({
+      canvas: this.canvas,
+      antialias: true,
+    });
+    this.renderer.setSize( window.innerWidth, window.innerHeight );
+    this.renderer.domElement.style.position = 'absolute';
+    this.renderer.domElement.style.top = '0px';
+    */
     this.renderer = new WebGLRenderer({
         canvas: this.canvas,
         antialias: true,
@@ -326,6 +380,21 @@ export class AppComponent implements OnInit {
     this.renderer.setClearColor(0x000000, 1);
     this.renderer.autoClear = true;
 
+    // create a renderer for CSS
+    this.rendererCSS	= new THREE.CSS3DRenderer();
+    this.rendererCSS.setSize( window.innerWidth, window.innerHeight );
+    this.rendererCSS.domElement.style.position = 'absolute';
+    this.rendererCSS.domElement.style.top	  = '0px';
+    this.rendererCSS.domElement.style.margin	  = '0px';
+    this.rendererCSS.domElement.style.padding  = '0px';
+    document.body.appendChild( this.rendererCSS.domElement );
+
+    this.renderer.domElement.style.position = 'absolute';
+    this.renderer.domElement.style.top      = '0px';
+    // make sure original renderer appears on top of CSS renderer
+    this.renderer.domElement.style.zIndex   = '1';
+    this.rendererCSS.domElement.appendChild( this.renderer.domElement );
+    
     this.render();
   }
 

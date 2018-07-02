@@ -23,7 +23,11 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/three/build/three.min.js",
+              "node_modules/three/examples/js/controls/OrbitControls.js",
+              "node_modules/three/examples/js/renderers/CSS3DRenderer.js"
+            ]
           },
           "configurations": {
             "production": {
