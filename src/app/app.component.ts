@@ -1,5 +1,5 @@
 import { Component, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
-import { CubeGeometry, Scene, PointLight, PerspectiveCamera, Vector3, BoxBufferGeometry, MeshBasicMaterial, Mesh, WebGLRenderer, PCFSoftShadowMap, Color, DoubleSide, Vector2, Geometry, Face3, Raycaster, ShaderMaterial, LineSegments, Box3, Ray, BoxGeometry, Matrix4, Matrix3, Line3, Line, AmbientLight, DirectionalLight, PlaneGeometry, LineBasicMaterial, CylinderGeometry, Material } from 'three';
+import { CubeGeometry, Scene, PointLight, PerspectiveCamera, Vector3, BoxBufferGeometry, MeshBasicMaterial, Mesh, WebGLRenderer, PCFSoftShadowMap, Color, DoubleSide, Vector2, Geometry, Face3, Raycaster, ShaderMaterial, LineSegments, Box3, Ray, BoxGeometry, Matrix4, Matrix3, Line3, Line, AmbientLight, DirectionalLight, PlaneGeometry, LineBasicMaterial, CylinderGeometry, Material, MeshPhongMaterial } from 'three';
 //import "./js/EnableThreeExamples";
 //import "three/examples/js/controls/OrbitControls";
 import { Cube } from './cube';
@@ -25,6 +25,8 @@ export class AppComponent implements OnInit {
   rendererCSS: THREE.CSS3DRenderer;
 
   controls: THREE.OrbitControls;
+
+  allCubes: Mesh;
 
   cubes: Array<Cube>;
 
@@ -91,12 +93,14 @@ export class AppComponent implements OnInit {
     light2.position.set(-200, 200, -300);
     this.scene.add(light2);
     // Add 2 lights to css scene
+    /*
     var light3 = new PointLight(0x114440, 5, 0);
     light3.position.set(200, 200, -300);
     this.cssScene.add(light3);
     var light4 = new PointLight(0x444011, 5, 0);
     light4.position.set(-200, 200, -300);
     this.cssScene.add(light4);
+    */
   }
 
   ///////////////////////////////////////////////////////////////////
@@ -161,25 +165,8 @@ export class AppComponent implements OnInit {
     this.cssScene.add(cssObject);
   }
 
-  private loadPlane() {
-    let geometry = new PlaneGeometry(1000, 1000, 1, 1);
-    
-    var material = new THREE.MeshPhongMaterial({
-      color: 0x555555,
-      specular: 0xffffff,
-      shininess: 50,
-      flatShading: THREE.SmoothShading
-    });
-    let plane = new Mesh(geometry, material);
-    this.scene.add(plane);
-  }
-
-  private loadCube() {
-    let cube = new Cube();
-    this.createCube(cube, 10, 0, 0, 0);
-  }
-
   private loadCubes() {
+    this.allCubes = new Mesh();
     for(let x = 0; x < 5; x++) {
       for(let y = 0; y < 5; y++) {
         for(let z = 0; z < 5; z++) {
@@ -202,56 +189,15 @@ export class AppComponent implements OnInit {
         }
       }
     }
-  }
-
-  private loadCubesRandom() {
-    for(let x = 0; x < 40; x++) {
-      let cube = new Cube();
-      this.createCube(cube, Math.random()*10, Math.random()*100-50, Math.random()*100-50, Math.random()*100-50);
-    }
-  }
-
-  moveCubes() {
-    for(let cube of this.cubes) {
-      if(cube.mesh) {
-        if(!cube.dfRotateX) {
-          cube.dfRotateX = Math.random()-0.5;
-        }
-        if(!cube.dfRotateY) {
-          cube.dfRotateY = Math.random()-0.5;
-        }
-        if(!cube.dfRotateZ) {
-          cube.dfRotateZ = Math.random()-0.5;
-        }
-        if(!cube.dfTranslateX) {
-          cube.dfTranslateX = Math.random()-0.5;
-        }
-        if(!cube.dfTranslateY) {
-          cube.dfTranslateY = Math.random()-0.5;
-        }
-        if(!cube.dfTranslateZ) {
-          cube.dfTranslateZ = Math.random()-0.5;
-        }
-        
-        if(cube.stopRotate == false) {
-          cube.mesh.rotateX(cube.dfRotateX/30);
-          cube.mesh.rotateY(cube.dfRotateY/30);
-          cube.mesh.rotateZ(cube.dfRotateZ/30);
-        }
-        if(cube.stopTranslate == false) {
-          cube.mesh.translateX(cube.dfTranslateX/10);
-          cube.mesh.translateY(cube.dfTranslateY/10);
-          cube.mesh.translateZ(cube.dfTranslateZ/10);
-        }
-      }
-    }
+    this.allCubes.rotateY(Math.PI/4);
+    this.scene.add(this.allCubes);
   }
 
   private createCilindre(cube, number, radius, size, translateX, translateY, translateZ, rotateX, rotateY, rotateZ) {
 
     let geometry = new CylinderGeometry(radius, radius, size, size, 1);
 
-    var material = new THREE.MeshPhongMaterial({
+    var material = new MeshPhongMaterial({
       color: 0x555555,
       specular: 0xffffff,
       shininess: 50,
@@ -271,7 +217,7 @@ export class AppComponent implements OnInit {
     if(rotateZ) {
       mesh.rotateZ(Math.PI/2);
     }
-    this.scene.add(mesh);
+    this.allCubes.add(mesh);
     
     return mesh;
   }
@@ -280,11 +226,11 @@ export class AppComponent implements OnInit {
     let geometry = new BoxGeometry(size, size, size, 1, 1, 1);
     
     // Make a material
-    var material = new THREE.MeshPhongMaterial({
+    var material = new MeshPhongMaterial({
       color: 0x555555,
       specular: 0xffffff,
       shininess: 50,
-      flatShading: THREE.SmoothShading      
+      flatShading: THREE.SmoothShading
     });
 
     if(transparent) {
@@ -293,11 +239,12 @@ export class AppComponent implements OnInit {
     }
 
     let mesh = new Mesh(geometry, material);
-    //mesh.rotateY(Math.PI/4);
+
     mesh.translateX(translateX);
     mesh.translateY(translateY);
     mesh.translateZ(translateZ);
-    this.scene.add(mesh);
+    
+    this.allCubes.add(mesh);
 
     return mesh;
   }
@@ -315,9 +262,9 @@ export class AppComponent implements OnInit {
       this.controls.update();
     }
 
-    this.renderer.render(this.scene, this.camera.camera);
-
     this.rendererCSS.render(this.cssScene, this.camera.camera);
+    
+    this.renderer.render(this.scene, this.camera.camera);
 
     requestAnimationFrame(this.render);
 
