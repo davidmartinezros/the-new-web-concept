@@ -34,11 +34,10 @@ export class AppComponent implements OnInit {
 
   @ViewChild('canvas') private canvasRef: ElementRef;
 
-  @ViewChild('canvasHtml') private canvasRefHtml: ElementRef;
+  //@ViewChild('canvasHtml') private canvasRefHtml: ElementRef;
 
   constructor() {
     this.render = this.render.bind(this);
-    this.renderControls = this.renderControls.bind(this);
     this.cubes = new Array();
     this.lines = new Array();
     this.colorsPalette();
@@ -47,25 +46,21 @@ export class AppComponent implements OnInit {
   private get canvas(): HTMLCanvasElement {
     return this.canvasRef.nativeElement;
   }
-
+/*
   private get canvasHtml(): HTMLCanvasElement {
     return this.canvasRefHtml.nativeElement;
   }
-
+*/
   ngOnInit() {
     this.scene = new Scene();
 
     this.cssScene = new Scene();
 
     this.create3dPage(
-      900, 1000,
-      new THREE.Vector3(0, 0, 50),
-      new THREE.Vector3(0, 0, 50),
-      'http://adndevblog.typepad.com/cloud_and_mobile');
-
-    //this.loadPlane();
-
-    //this.loadHtml();
+      window.innerWidth, window.innerHeight,
+      new THREE.Vector3(0, 0, -400),
+      new THREE.Vector3(0, 0, 0),
+      'http://www.bbc.com/');
 
     this.loadCubes();
 
@@ -82,26 +77,20 @@ export class AppComponent implements OnInit {
 
   private createCamera() {
     this.camera = new Camera();
-    this.camera.camera = new PerspectiveCamera(55.0, (window.innerWidth / 2)/window.innerHeight, 0.5, 3000);
-    this.camera.camera.position.set(75, 75, -75);
-    this.camera.camera.lookAt(this.scene.position);
-/*
-    this.camera.cameraHtml = new PerspectiveCamera(55.0, (window.innerWidth / 2)/window.innerHeight, 0.5, 3000);
-    this.camera.cameraHtml.position.set(0, 0, 300);
-    this.camera.cameraHtml.lookAt(this.cssScene.position);
-    console.log(this.cssScene.position)
- */
+    this.camera.camera = new PerspectiveCamera(55.0, window.innerWidth/window.innerHeight, 0.5, 3000);
+    this.camera.camera.position.set(0, 0, 500);
+    this.camera.camera.lookAt(0, 0, 0);
   }
 
   private createLights() {
-    // Add 2 lights.
+    // Add 2 lights to scene
     var light1 = new PointLight(0x114440, 5, 0);
     light1.position.set(200, 200, -300);
     this.scene.add(light1);
     var light2 = new PointLight(0x444011, 5, 0);
     light2.position.set(-200, 200, -300);
     this.scene.add(light2);
-
+    // Add 2 lights to css scene
     var light3 = new PointLight(0x114440, 5, 0);
     light3.position.set(200, 200, -300);
     this.cssScene.add(light3);
@@ -172,57 +161,9 @@ export class AppComponent implements OnInit {
     this.cssScene.add(cssObject);
   }
 
-  private loadHtml() {
-  /*
-    // create the plane mesh
-    var material = new THREE.MeshBasicMaterial({ wireframe: true });
-    var planeWidth = 360;
-    var planeHeight = 120;
-	  var geometry = new THREE.PlaneGeometry( planeWidth, planeHeight );
-    var planeMesh= new THREE.Mesh( geometry, material );
-    // add it to the WebGL scene
-    this.scene.add(planeMesh);
-*/
-    // create the dom Element
-    var element = document.createElement( 'iframe' );
-    element.src = 'https://www.google.es/';
-    // width of iframe in pixels
-    var elementWidth = 500;
-    // force iframe to have same relative dimensions as planeGeometry
-    var aspectRatio = (window.innerWidth/2) / window.innerHeight;
-    var elementHeight = elementWidth * aspectRatio;
-    element.style.width  = elementWidth + "px";
-    element.style.height = elementHeight + "px";
-    element.style.backgroundColor = "white";
-
-    // create the object3d for this element
-    var cssObject = new THREE.CSS3DObject( element );
-    
-    cssObject.position.x = 0;
-    cssObject.position.y = 0;
-    cssObject.position.z = 0;
-/*
-    cssObject.rotation.x = planeMesh.rotation.x;
-    cssObject.rotation.y = planeMesh.rotation.z;
-    cssObject.rotation.z = planeMesh.rotation.z;
-*/
-/*
-    var percentBorder = 0.05;
-    cssObject.scale.x /= (1 + percentBorder) * (elementWidth / planeWidth);
-    cssObject.scale.y /= (1 + percentBorder) * (elementWidth / planeWidth);
-    // we reference the same position and rotation 
-    */
-    console.log(cssObject);
-    //cssObject.position = planeMesh.position;
-    //cssObject.rotation = planeMesh.rotation;
-    // add it to the css scene
-    this.cssScene.add(cssObject);
-  }
-
   private loadPlane() {
     let geometry = new PlaneGeometry(1000, 1000, 1, 1);
     
-    // Make a material
     var material = new THREE.MeshPhongMaterial({
       color: 0x555555,
       specular: 0xffffff,
@@ -239,24 +180,6 @@ export class AppComponent implements OnInit {
   }
 
   private loadCubes() {
-    /*
-    let geometry = new BoxGeometry(12, 50, 12, 1, 1, 1);
-    
-    var material = new THREE.MeshPhongMaterial({
-      color: 0x555555,
-      specular: 0xffffff,
-      shininess: 50,
-      flatShading: THREE.SmoothShading,
-      transparent: true,
-      opacity: 0.25
-    });
-
-    let mesh = new Mesh(geometry, material);
-    mesh.translateX(0);
-    mesh.translateY(-6);
-    mesh.translateZ(0);
-    this.scene.add(mesh);
-    */
     for(let x = 0; x < 5; x++) {
       for(let y = 0; y < 5; y++) {
         for(let z = 0; z < 5; z++) {
@@ -311,18 +234,15 @@ export class AppComponent implements OnInit {
         }
         
         if(cube.stopRotate == false) {
-          //console.log("aa:" + cube.stopRotate);
           cube.mesh.rotateX(cube.dfRotateX/30);
           cube.mesh.rotateY(cube.dfRotateY/30);
           cube.mesh.rotateZ(cube.dfRotateZ/30);
         }
         if(cube.stopTranslate == false) {
-          //console.log("aa:" + cube.stopTranslate);
           cube.mesh.translateX(cube.dfTranslateX/10);
           cube.mesh.translateY(cube.dfTranslateY/10);
           cube.mesh.translateZ(cube.dfTranslateZ/10);
         }
-        //console.log(this.cubes[x].totalRotateX);
       }
     }
   }
@@ -331,20 +251,13 @@ export class AppComponent implements OnInit {
 
     let geometry = new CylinderGeometry(radius, radius, size, size, 1);
 
-    // Make a material
     var material = new THREE.MeshPhongMaterial({
       color: 0x555555,
       specular: 0xffffff,
       shininess: 50,
       flatShading: THREE.SmoothShading      
     });
-    /*
-    var geometry = new THREE.Geometry();
-    geometry.vertices.push(
-      new THREE.Vector3( -translateX, translateY, -translateZ ),
-      new THREE.Vector3( translateX, translateY, translateZ )
-    );
-    */
+
     let mesh = new Mesh(geometry, material);
     mesh.translateX(translateX);
     mesh.translateY(translateY);
@@ -376,7 +289,6 @@ export class AppComponent implements OnInit {
 
     if(transparent) {
       material.transparent = true;
-      //material.premultipliedAlpha = true;
       material.opacity = opacity;
     }
 
@@ -398,65 +310,34 @@ export class AppComponent implements OnInit {
   }
 
   public render() {
-    //console.log("render");
 
-    //this.moveCubes();
+    if(this.controls) {
+      this.controls.update();
+    }
 
-    //this.moveCamera();
+    this.renderer.render(this.scene, this.camera.camera);
 
-    this.renderer.render( this.scene, this.camera.camera );
-
-    this.rendererCSS.render( this.cssScene, this.camera.camera );
+    this.rendererCSS.render(this.cssScene, this.camera.camera);
 
     requestAnimationFrame(this.render);
 
-  }
-
-  renderControls() {
-    this.renderer.render( this.scene, this.camera.camera );
-
-    this.rendererCSS.render( this.cssScene, this.camera.camera );
   }
 
   public addControls() {
       this.controls = new THREE.OrbitControls(this.camera.camera);
       this.controls.rotateSpeed = 1.0;
       this.controls.zoomSpeed = 1.2;
-      this.controls.addEventListener('change', this.renderControls);
   }
 
   private startRendering() {
-    /*
-    this.renderer = new THREE.CSS3DRenderer({
-      canvas: this.canvas,
-      antialias: true,
-    });
-    this.renderer.setSize( window.innerWidth, window.innerHeight );
-    this.renderer.domElement.style.position = 'absolute';
-    this.renderer.domElement.style.top = '0px';
-    */
+
     this.renderer = this.createGlRenderer();
 
-    console.log(this.canvas);
-
-    console.log(this.canvasHtml);
-
-    // create a renderer for CSS
     this.rendererCSS	= this.createCssRenderer();
 
     document.body.appendChild(this.rendererCSS.domElement);
     this.rendererCSS.domElement.appendChild(this.renderer.domElement);
 
-    //this.rendererCSS.domElement.appendChild(glRenderer.domElement);
-    
-    //document.body.appendChild( this.rendererCSS.domElement );
-/*
-    this.renderer.domElement.style.position = 'absolute';
-    this.renderer.domElement.style.top      = '0px';
-    // make sure original renderer appears on top of CSS renderer
-    this.renderer.domElement.style.zIndex   = '1';
-    //this.rendererCSS.domElement.appendChild( this.renderer.domElement );
-  */  
     this.render();
   }
 
@@ -517,11 +398,9 @@ export class AppComponent implements OnInit {
     console.log(intersects.length + " intersected objects found")
     if(intersects.length > 0) {
         //console.log(i.object); // do what you want to do with object
-        //i.object.position.y = i.object.position.y + 1;
         let cubesTmp: Cube[];
         cubesTmp = this.cubes.filter(cube => cube.mesh === intersects[0].object)
         if(cubesTmp.length > 0) {
-          //console.log(cubesTmp[0].stopTranslate);
           if(!cubesTmp[0].changed) {
             cubesTmp[0].stopTranslate = !cubesTmp[0].stopTranslate;
             cubesTmp[0].stopRotate = !cubesTmp[0].stopRotate;
@@ -544,12 +423,10 @@ export class AppComponent implements OnInit {
                 }
               }
             }
-            //console.log(cubesTmp[0].stopTranslate);
           }
         }
     }
     this.setAllChangedsToFalse();
-    this.renderControls();
   }
 
   private setAllChangedsToFalse() {
@@ -575,12 +452,12 @@ export class AppComponent implements OnInit {
   @HostListener('window:resize', ['$event'])
   public onResize(event: Event) {
 
-      console.log("onResize: " + (window.innerWidth - 2)/2 + ", "  + (window.innerHeight - 6));
+      console.log("onResize: " + (window.innerWidth - 2) + ", "  + (window.innerHeight - 6));
 
       this.camera.camera.aspect = this.getAspectRatio();
       this.camera.camera.updateProjectionMatrix();
-      this.renderer.setSize((window.innerWidth - 2)/2, window.innerHeight - 6);
-      this.rendererCSS.setSize((window.innerWidth - 2)/2, window.innerHeight - 6);
+      this.renderer.setSize(window.innerWidth - 2, window.innerHeight - 6);
+      this.rendererCSS.setSize(window.innerWidth - 2, window.innerHeight - 6);
       this.render();
   }
 
@@ -594,7 +471,7 @@ export class AppComponent implements OnInit {
     if (height === 0) {
         return 0;
     }
-    return (this.canvas.clientWidth/2) / this.canvas.clientHeight;
+    return this.canvas.clientWidth / this.canvas.clientHeight;
   }
 
 }
